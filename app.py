@@ -294,7 +294,7 @@ def render_chat_history():
         with st.chat_message("user" if rol == "usuario" else "assistant"):
             st.markdown(mensaje)
 
-# Mostrar historial
+# Mostrar historial del chat
 render_chat_history()
 
 # Input del usuario
@@ -304,31 +304,53 @@ if user_input:
     process_user_input(user_input)
     st.rerun()
 
-# ---------------------------
-# INFORMACIÓN ADICIONAL
-# ---------------------------
-with st.expander("ℹ️ Información sobre el TUPA"):
-    st.markdown("""
-    **¿Qué es el TUPA?**
-    
-    El Texto Único de Procedimientos Administrativos (TUPA) es el documento que contiene todos los 
-    procedimientos administrativos que realiza una entidad pública, incluyendo:
-    
-    - **Requisitos** necesarios para cada trámite
-    - **Plazos** de atención
-    - **Costos** asociados
-    - **Base legal** correspondiente
-    - **Unidades orgánicas** responsables
-    
-    Este asistente te ayudará a encontrar información específica sobre cualquier trámite del 
-    Gobierno Regional del Cusco de manera rápida y precisa.
-    """)
+# Input del usuario
+user_input = st.chat_input("💬 Escribe tu consulta sobre el TUPA aquí...")
 
-# Footer
-st.markdown("---")
+if user_input:
+    process_user_input(user_input)
+    st.rerun()
+
+# ---------------------------
+# INFORMACIÓN SUTIL AL FINAL
+# ---------------------------
+# Solo mostrar información adicional si no hay conversación activa
+if not st.session_state.messages:
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Consejos de uso sutiles
+    st.markdown("""
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #007bff; margin: 20px 0;'>
+            <p style='margin: 0; font-size: 0.9rem; color: #666;'>
+                💡 <strong>Ejemplos de consultas:</strong><br>
+                • "¿Cuáles son los requisitos para licencia de funcionamiento?"<br>
+                • "¿Cuánto cuesta el certificado de compatibilidad de uso?"<br>
+                • "¿Cuánto tiempo demora una autorización sanitaria?"
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# Footer sutil (siempre visible pero discreto)
+st.markdown("<br><br>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    with st.expander("ℹ️ ¿Qué es el TUPA?", expanded=False):
+        st.markdown("""
+        <div style='font-size: 0.9rem;'>
+        El <strong>Texto Único de Procedimientos Administrativos (TUPA)</strong> contiene todos los 
+        trámites del Gobierno Regional del Cusco con información sobre:
+        
+        📋 Requisitos necesarios  
+        ⏱️ Plazos de atención  
+        💰 Costos asociados  
+        📜 Base legal  
+        🏢 Oficinas responsables
+        </div>
+        """, unsafe_allow_html=True)
+
 st.markdown(
-    "<p style='text-align: center; color: #666; font-size: 0.9rem;'>"
-    "🏛️ Gobierno Regional del Cusco - Asistente TUPA Demo"
+    "<p style='text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 30px;'>"
+    "🏛️ Gobierno Regional del Cusco • Asistente TUPA Demo"
     "</p>", 
     unsafe_allow_html=True
 )
