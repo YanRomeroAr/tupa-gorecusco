@@ -230,4 +230,3 @@ if user_input:
     except Exception as e:
         st.error(f"Error de conexión: {e}")
         st.session_state.messages.append(("asistente", "Error de conexión. Por favor, intenta nuevamente."))
-)
