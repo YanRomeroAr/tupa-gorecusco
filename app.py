@@ -297,12 +297,11 @@ def render_chat_history():
 # Mostrar historial del chat
 render_chat_history()
 
-# Input del usuario
+# Input del usuario - Solo una vez por ejecución
 user_input = st.chat_input("💬 Escribe tu consulta sobre el TUPA aquí...")
 
 if user_input:
     process_user_input(user_input)
-    st.rerun()
 
 # Input del usuario
 user_input = st.chat_input("💬 Escribe tu consulta sobre el TUPA aquí...")
