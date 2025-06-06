@@ -5,6 +5,15 @@ import re
 from typing import List, Tuple, Optional
 
 # ---------------------------
+# CONFIGURACIÓN DE PÁGINA (DEBE SER LO PRIMERO)
+# ---------------------------
+st.set_page_config(
+    page_title="Asistente TUPA - Gore Cusco", 
+    page_icon="🤖", 
+    layout="centered"
+)
+
+# ---------------------------
 # CONFIGURACIÓN
 # ---------------------------
 @st.cache_data
@@ -27,15 +36,6 @@ try:
 except KeyError as e:
     st.error(f"Error de configuración: {e}")
     st.stop()
-
-# ---------------------------
-# CONFIGURACIÓN DE PÁGINA
-# ---------------------------
-st.set_page_config(
-    page_title=config["page_title"], 
-    page_icon=config["page_icon"], 
-    layout="centered"
-)
 
 # ---------------------------
 # ESTILOS PERSONALIZADOS
