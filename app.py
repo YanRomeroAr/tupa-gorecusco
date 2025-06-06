@@ -230,11 +230,4 @@ if user_input:
     except Exception as e:
         st.error(f"Error de conexión: {e}")
         st.session_state.messages.append(("asistente", "Error de conexión. Por favor, intenta nuevamente."))
-
-
-st.markdown(
-    "<p style='text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 30px;'>"
-    "🏛️ Gobierno Regional del Cusco • Asistente TUPA Demo"
-    "</p>", 
-    unsafe_allow_html=True
 )
