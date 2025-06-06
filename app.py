@@ -231,42 +231,6 @@ if user_input:
         st.error(f"Error de conexión: {e}")
         st.session_state.messages.append(("asistente", "Error de conexión. Por favor, intenta nuevamente."))
 
-# ---------------------------
-# INFORMACIÓN SUTIL AL FINAL
-# ---------------------------
-# Solo mostrar información adicional si no hay conversación activa
-if not st.session_state.messages:
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Consejos de uso sutiles
-    st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #007bff; margin: 20px 0;'>
-            <p style='margin: 0; font-size: 0.9rem; color: #666;'>
-                💡 <strong>Ejemplos de consultas:</strong><br>
-                • "¿Cuáles son los requisitos para licencia de funcionamiento?"<br>
-                • "¿Cuánto cuesta el certificado de compatibilidad de uso?"<br>
-                • "¿Cuánto tiempo demora una autorización sanitaria?"
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-
-# Footer sutil (siempre visible pero discreto)
-st.markdown("<br><br>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    with st.expander("ℹ️ ¿Qué es el TUPA?", expanded=False):
-        st.markdown("""
-        <div style='font-size: 0.9rem;'>
-        El <strong>Texto Único de Procedimientos Administrativos (TUPA)</strong> contiene todos los 
-        trámites del Gobierno Regional del Cusco con información sobre:
-        
-        📋 Requisitos necesarios  
-        ⏱️ Plazos de atención  
-        💰 Costos asociados  
-        📜 Base legal  
-        🏢 Oficinas responsables
-        </div>
-        """, unsafe_allow_html=True)
 
 st.markdown(
     "<p style='text-align: center; color: #aaa; font-size: 0.8rem; margin-top: 30px;'>"
