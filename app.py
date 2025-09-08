@@ -440,6 +440,42 @@ init_session()
 # Barra de estado
 st.markdown('<div class="status-bar"><div class="status-active"></div></div>', unsafe_allow_html=True)
 
+# Barra lateral izquierda
+st.markdown(f"""
+    <div class="left-sidebar">
+        <div class="sidebar-header">🏛️ Asistente TUPA</div>
+        
+        <div class="status-section">
+            <div class="status-item">
+                <div class="status-dot status-connected"></div>
+                <span>🟢 Conectado</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot {'status-active' if st.session_state.thread_id else 'status-inactive'}"></div>
+                <span>{'🟢 Conversación Activa' if st.session_state.thread_id else '⚪ Esperando'}</span>
+            </div>
+        </div>
+        
+        <button class="new-chat-btn" onclick="window.location.reload()">
+            ↻ Nueva Conversación
+        </button>
+        
+        <div class="stats-section">
+            <div class="stat-row">
+                <span>Mensajes:</span>
+                <span class="stat-value">{len(st.session_state.messages)}</span>
+            </div>
+            <div class="stat-row">
+                <span>Sesión:</span>
+                <span class="stat-value">{'Activa' if st.session_state.thread_id else 'Nueva'}</span>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Contenido principal con margen
+st.markdown('<div class="main-content">', unsafe_allow_html=True)
+
 # Cabecera sutil cuando hay mensajes
 if st.session_state.messages:
     st.markdown("""
@@ -499,17 +535,8 @@ if prompt := st.chat_input("Pregunta sobre procedimientos del TUPA..."):
     process_query(prompt)
     st.rerun()
 
-# Sidebar minimalista
-with st.sidebar:
-    if st.session_state.messages:
-        if st.button("↻ Nueva Conversación", use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.thread_id = None
-            st.rerun()
-    
-    st.markdown("---")
-    st.markdown(f"**Mensajes:** {len(st.session_state.messages)}")
-    st.markdown(f"**Estado:** {'🟢 Activo' if st.session_state.thread_id else '⚪ Listo'}")
+# Cerrar contenido principal
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 if st.session_state.messages:
