@@ -11,7 +11,7 @@ st.set_page_config(
     page_title="Asistente TUPA",
     page_icon="🏛️",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Configuración OpenAI
@@ -52,10 +52,10 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     }
     
-    /* Cabecera sutil cuando hay mensajes */
+    /* Cabecera mínima */
     .mini-header {
         text-align: center;
-        padding: 1rem 0 0.5rem 0;
+        padding: 0.5rem 0;
         border-bottom: 1px solid var(--border);
         margin-bottom: 1rem;
         background: rgba(255, 255, 255, 0.95);
@@ -63,18 +63,18 @@ st.markdown("""
     
     .mini-header h3 {
         margin: 0;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary);
     }
     
     .mini-header p {
-        margin: 0.25rem 0 0 0;
-        font-size: 0.8rem;
+        margin: 0.1rem 0 0 0;
+        font-size: 0.75rem;
         color: var(--text-secondary);
     }
     
-    /* Header minimalista */
+    /* Header inicial */
     .hero-section {
         text-align: center;
         padding: 4rem 2rem 3rem;
@@ -244,36 +244,6 @@ st.markdown("""
     .typing-dot:nth-child(1) { animation-delay: -0.32s; }
     .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
-    /* Quick actions minimalista */
-    .quick-actions {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: center;
-        margin: 2rem 0;
-        flex-wrap: wrap;
-    }
-    
-    .quick-action {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 0.75rem 1.25rem;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-block;
-    }
-    
-    .quick-action:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
-        text-decoration: none;
-    }
-
     /* Animaciones suaves */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -290,9 +260,6 @@ st.markdown("""
         40% { transform: scale(1); }
     }
 
-    /* Sidebar minimalista */
-    .css-1d391kg { padding-top: 2rem; }
-    
     /* Footer ultra limpio */
     .footer {
         text-align: center;
@@ -321,23 +288,10 @@ st.markdown("""
         .stChatMessage[data-testid="assistant-message"] > div {
             max-width: 90% !important;
         }
-        
-        .quick-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .quick-action {
-            width: 100%;
-            max-width: 300px;
-            text-align: center;
-        }
     }
     
     /* Ocultar elementos innecesarios */
-    .css-1kyxreq { display: none; }
     footer { display: none; }
-    .css-15zrgzn { display: none; }
     header[data-testid="stHeader"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
@@ -440,43 +394,36 @@ init_session()
 # Barra de estado
 st.markdown('<div class="status-bar"><div class="status-active"></div></div>', unsafe_allow_html=True)
 
-# Barra lateral izquierda
-st.markdown(f"""
-    <div class="left-sidebar">
-        <div class="sidebar-header">🏛️ Asistente TUPA</div>
-        
-        <div class="status-section">
-            <div class="status-item">
-                <div class="status-dot status-connected"></div>
-                <span>🟢 Conectado</span>
-            </div>
-            <div class="status-item">
-                <div class="status-dot {'status-active' if st.session_state.thread_id else 'status-inactive'}"></div>
-                <span>{'🟢 Conversación Activa' if st.session_state.thread_id else '⚪ Esperando'}</span>
-            </div>
-        </div>
-        
-        <button class="new-chat-btn" onclick="window.location.reload()">
-            ↻ Nueva Conversación
-        </button>
-        
-        <div class="stats-section">
-            <div class="stat-row">
-                <span>Mensajes:</span>
-                <span class="stat-value">{len(st.session_state.messages)}</span>
-            </div>
-            <div class="stat-row">
-                <span>Sesión:</span>
-                <span class="stat-value">{'Activa' if st.session_state.thread_id else 'Nueva'}</span>
-            </div>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+# Sidebar con indicadores y controles
+with st.sidebar:
+    st.header("🏛️ Asistente TUPA")
+    st.divider()
+    
+    # Indicadores de estado
+    st.subheader("📊 Estado del Sistema")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Conexión", "🟢 Activa")
+    with col2:
+        status = "🟢 Activa" if st.session_state.thread_id else "⚪ Lista"
+        st.metric("Sesión", status)
+    
+    st.divider()
+    
+    # Estadísticas
+    st.subheader("📈 Estadísticas")
+    st.metric("Mensajes", len(st.session_state.messages))
+    st.metric("Conversación", "Iniciada" if st.session_state.thread_id else "Nueva")
+    
+    st.divider()
+    
+    # Botón nueva conversación
+    if st.button("🔄 Nueva Conversación", use_container_width=True, type="primary"):
+        st.session_state.messages = []
+        st.session_state.thread_id = None
+        st.rerun()
 
-# Contenido principal con margen
-st.markdown('<div class="main-content">', unsafe_allow_html=True)
-
-# Cabecera sutil cuando hay mensajes
+# Cabecera mínima cuando hay mensajes
 if st.session_state.messages:
     st.markdown("""
         <div class="mini-header">
@@ -497,7 +444,7 @@ if not st.session_state.messages:
         </div>
     """, unsafe_allow_html=True)
     
-    # Botones de acciones rápidas FUNCIONALES
+    # Botones de acciones rápidas
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -534,9 +481,6 @@ st.markdown('</div>', unsafe_allow_html=True)
 if prompt := st.chat_input("Pregunta sobre procedimientos del TUPA..."):
     process_query(prompt)
     st.rerun()
-
-# Cerrar contenido principal
-st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 if st.session_state.messages:
