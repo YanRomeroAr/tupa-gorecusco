@@ -52,6 +52,28 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     }
     
+    /* Cabecera sutil cuando hay mensajes */
+    .mini-header {
+        text-align: center;
+        padding: 1rem 0 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .mini-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .mini-header p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    
     /* Header minimalista */
     .hero-section {
         text-align: center;
@@ -375,13 +397,6 @@ def get_response(thread_id: str) -> Optional[str]:
 def process_query(query: str):
     if not query.strip():
         return
-    
-    # Verificar conexión antes de procesar
-    if not st.session_state.openai_connected:
-        st.session_state.openai_connected = check_openai_connection()
-        if not st.session_state.openai_connected:
-            st.error("Sin conexión a OpenAI. Verifica tu configuración.")
-            return
         
     if not st.session_state.thread_id:
         st.session_state.thread_id = create_thread()
@@ -425,7 +440,16 @@ init_session()
 # Barra de estado
 st.markdown('<div class="status-bar"><div class="status-active"></div></div>', unsafe_allow_html=True)
 
-# Sección hero
+# Cabecera sutil cuando hay mensajes
+if st.session_state.messages:
+    st.markdown("""
+        <div class="mini-header">
+            <h3>🏛️ Asistente TUPA</h3>
+            <p>Gobierno Regional del Cusco</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# Sección hero (solo cuando no hay mensajes)
 if not st.session_state.messages:
     st.markdown("""
         <div class="hero-section">
