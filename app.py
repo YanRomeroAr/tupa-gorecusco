@@ -2,157 +2,116 @@ import streamlit as st
 import openai
 import time
 import re
-from typing import List, Tuple, Optional
+from typing import Optional
 
 # ---------------------------
 # CONFIGURACIÓN
 # ---------------------------
-@st.cache_data
-def load_config():
-    """Carga la configuración de la aplicación"""
-    return {
-        "page_title": "Asistente TUPA - Gore Cusco",
-        "page_icon": "🤖",
-        "logo_url": "https://goresedetramitedigital.regioncusco.gob.pe/filest/images/logoRegion.png",
-        "title": "Demo - Bot del TUPA Gore Cusco",
-        "description": "Haz tus consultas sobre el Texto Único de Procedimientos Administrativos (TUPA) del Gobierno Regional del Cusco y obtén respuestas claras, rápidas y confiables sobre requisitos, plazos y costos de cada trámite."
-    }
+st.set_page_config(
+    page_title="Asistente TUPA - Gore Cusco",
+    page_icon="🤖",
+    layout="centered"
+)
 
-config = load_config()
-
-# Configuración de OpenAI
+# Configuración de OpenAI desde Streamlit secrets
 try:
     openai.api_key = st.secrets["openai_api_key"]
     assistant_id = st.secrets["assistant_id"]
 except KeyError as e:
-    st.error(f"Error de configuración: {e}")
+    st.error(f"❌ Error de configuración: {e}")
+    st.error("Configura las variables en Streamlit Cloud: Settings > Secrets")
     st.stop()
 
 # ---------------------------
-# CONFIGURACIÓN DE PÁGINA
+# ESTILOS MEJORADOS
 # ---------------------------
-st.set_page_config(
-    page_title=config["page_title"], 
-    page_icon=config["page_icon"], 
-    layout="centered"
-)
+st.markdown("""
+    <style>
+        /* Fondo y colores */
+        .stApp { background-color: #f8f9fa; }
+        
+        /* Header personalizado */
+        .header-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-container h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header-container p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* Chat mejorado */
+        .stChatMessage {
+            border-radius: 15px !important;
+            margin: 10px 0 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Input mejorado */
+        .stChatInputContainer {
+            border-radius: 25px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Botones */
+        .stButton > button {
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Alertas */
+        .stAlert { border-radius: 10px !important; }
+        
+        /* Indicador de carga */
+        .loading-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2196f3;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # ---------------------------
-# ESTILOS PERSONALIZADOS
-# ---------------------------
-def apply_custom_styles():
-    """Aplica estilos CSS personalizados"""
-    st.markdown("""
-        <style>
-            /* Estilos generales */
-            html, body, .stApp {
-                background-color: white !important;
-                color: black !important;
-            }
-            
-            /* Estilos de texto */
-            .stMarkdown h1, .stMarkdown h2, .stMarkdown p,
-            .stChatMessage p, .stChatMessage ul, .stChatMessage ol, 
-            .stChatMessage li, .stChatMessage span, .stChatMessage div {
-                color: black !important;
-            }
-            
-            /* Header con logo y título */
-            .header-container {
-                display: flex;
-                align-items: center;
-                gap: 20px;
-                margin-bottom: 20px;
-                padding: 10px 0;
-            }
-            
-            .header-logo {
-                flex-shrink: 0;
-            }
-            
-            .header-text {
-                flex-grow: 1;
-            }
-            
-            .header-text h1 {
-                margin: 0 !important;
-                font-size: 2.5rem !important;
-                font-weight: 600 !important;
-            }
-            
-            /* Estilos del input */
-            input[type="text"] {
-                background-color: white !important;
-                color: black !important;
-                border: 2px solid #ddd !important;
-                border-radius: 25px !important;
-                padding: 12px 20px !important;
-                transition: border-color 0.3s ease;
-            }
-            
-            input[type="text"]:focus {
-                border-color: #007bff !important;
-                box-shadow: 0 0 0 3px rgba(0,123,255,0.25) !important;
-            }
-            
-            input[type="text"]::placeholder {
-                color: #888 !important;
-            }
-            
-            /* Botón de envío */
-            .stChatInputContainer button {
-                background-color: #007bff !important;
-                color: white !important;
-                border: 2px solid #007bff !important;
-                border-radius: 25px !important;
-                transition: all 0.3s ease;
-            }
-            
-            .stChatInputContainer button:hover {
-                background-color: #0056b3 !important;
-                border-color: #0056b3 !important;
-            }
-            
-            /* Responsivo */
-            @media (max-width: 768px) {
-                .header-container {
-                    flex-direction: column;
-                    text-align: center;
-                    gap: 15px;
-                }
-                
-                .header-text h1 {
-                    font-size: 2rem !important;
-                }
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-apply_custom_styles()
-
-# ---------------------------
-# HEADER CON LOGO Y TÍTULO
-# ---------------------------
-def render_header():
-    """Renderiza el header con logo y título lado a lado"""
-    st.markdown(f"""
-        <div class="header-container">
-            <div class="header-logo">
-                <img src="{config['logo_url']}" width="120" alt="Logo Gore Cusco">
-            </div>
-            <div class="header-text">
-                <h1>{config['title']}</h1>
-                <p style="margin: 10px 0 0 0; font-size: 1.1rem; color: #666;">
-                    {config['description']}
-                </p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-render_header()
-
-# ---------------------------
-# GESTIÓN DE ESTADO
+# FUNCIONES PRINCIPALES
 # ---------------------------
 def init_session_state():
     """Inicializa el estado de la sesión"""
@@ -160,40 +119,37 @@ def init_session_state():
         st.session_state.messages = []
     if "thread_id" not in st.session_state:
         st.session_state.thread_id = None
-    if "historial_preguntas" not in st.session_state:
-        st.session_state.historial_preguntas = []
 
-init_session_state()
-
-# ---------------------------
-# FUNCIONES AUXILIARES
-# ---------------------------
 def is_contextual_query(user_input: str) -> bool:
-    """Determina si la consulta es contextual basada en palabras clave"""
-    frases_contextuales = [
-        "no entendí", "explica", "dudas", "más claro", "más simple", "no me parece",
-        "repite", "aclara", "sencillo", "para qué sirve", "cuál es el objetivo", 
-        "qué finalidad tiene", "por qué se hace", "qué implica", "cuál es el propósito",
-        "a qué se refiere", "qué significa esto", "no quedó claro", "detalla mejor",
-        "en otras palabras", "hazlo más fácil", "explícame mejor", "no me queda claro"
+    """Detecta si es una consulta contextual"""
+    contextual_phrases = [
+        "no entendí", "explica", "más claro", "repite", "aclara",
+        "qué significa", "no quedó claro", "más simple", "detalla"
     ]
-    return any(frase in user_input.lower() for frase in frases_contextuales)
+    return any(phrase in user_input.lower() for phrase in contextual_phrases)
 
 def clean_response(response: str) -> str:
-    """Limpia la respuesta removiendo referencias innecesarias"""
-    return re.sub(r'【\d+:.*?†.*?】', '', response)
+    """Limpia la respuesta del asistente"""
+    if not response:
+        return "Lo siento, no pude generar una respuesta. Intenta nuevamente."
+    
+    # Remover referencias de documentos
+    response = re.sub(r'【\d+:.*?】', '', response)
+    response = re.sub(r'\s+', ' ', response).strip()
+    
+    return response
 
-def create_new_thread() -> str:
+def create_thread() -> Optional[str]:
     """Crea un nuevo hilo de conversación"""
     try:
         thread = openai.beta.threads.create()
         return thread.id
     except Exception as e:
-        st.error(f"Error al crear hilo de conversación: {e}")
+        st.error(f"Error creando conversación: {e}")
         return None
 
-def send_message_to_assistant(thread_id: str, content: str) -> bool:
-    """Envía un mensaje al asistente"""
+def send_message(thread_id: str, content: str) -> bool:
+    """Envía mensaje al asistente"""
     try:
         openai.beta.threads.messages.create(
             thread_id=thread_id,
@@ -202,39 +158,33 @@ def send_message_to_assistant(thread_id: str, content: str) -> bool:
         )
         return True
     except Exception as e:
-        st.error(f"Error al enviar mensaje: {e}")
+        st.error(f"Error enviando mensaje: {e}")
         return False
 
-def run_assistant(thread_id: str) -> Optional[str]:
-    """Ejecuta el asistente y obtiene la respuesta"""
+def get_assistant_response(thread_id: str) -> Optional[str]:
+    """Obtiene respuesta del asistente"""
     try:
+        # Ejecutar asistente
         run = openai.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id
         )
         
-        # Esperar a que complete
-        max_attempts = 60  # Máximo 60 segundos
-        attempts = 0
-        
-        while attempts < max_attempts:
-            status_info = openai.beta.threads.runs.retrieve(
+        # Esperar completación
+        max_attempts = 30
+        for _ in range(max_attempts):
+            status = openai.beta.threads.runs.retrieve(
                 thread_id=thread_id,
                 run_id=run.id
             )
             
-            if status_info.status == "completed":
+            if status.status == "completed":
                 break
-            elif status_info.status == "failed":
-                st.error("Error al procesar la respuesta del asistente")
+            elif status.status == "failed":
+                st.error("Error procesando respuesta")
                 return None
             
             time.sleep(1)
-            attempts += 1
-        
-        if attempts >= max_attempts:
-            st.error("Tiempo de espera agotado")
-            return None
         
         # Obtener mensajes
         messages = openai.beta.threads.messages.list(thread_id=thread_id)
@@ -246,89 +196,123 @@ def run_assistant(thread_id: str) -> Optional[str]:
         return None
         
     except Exception as e:
-        st.error(f"Error al ejecutar asistente: {e}")
+        st.error(f"Error obteniendo respuesta: {e}")
         return None
 
-def process_user_input(user_input: str):
-    """Procesa la entrada del usuario y genera respuesta"""
-    # Determinar si es consulta contextual
-    es_contextual = is_contextual_query(user_input)
+def validate_input(user_input: str) -> tuple[bool, str]:
+    """Valida la entrada del usuario"""
+    if not user_input or len(user_input.strip()) == 0:
+        return False, "La consulta no puede estar vacía"
     
-    # Preparar el prompt
-    if es_contextual and st.session_state.historial_preguntas and st.session_state.thread_id:
-        referencia = st.session_state.historial_preguntas[-1]
-        prompt = f"Responde con más claridad sobre esto: {referencia}. Pregunta actual: {user_input}"
-    else:
-        prompt = user_input
-        # Crear nuevo hilo si no existe o no es contextual
-        if not st.session_state.thread_id or not es_contextual:
-            st.session_state.thread_id = create_new_thread()
-            if not st.session_state.thread_id:
-                return
-        
-        # Agregar al historial
-        st.session_state.historial_preguntas.append(user_input)
+    if len(user_input) > 1000:
+        return False, "La consulta es demasiado larga (máximo 1000 caracteres)"
     
-    # Agregar mensaje del usuario al chat
-    st.session_state.messages.append(("usuario", user_input))
-    
-    # Enviar mensaje al asistente
-    if not send_message_to_assistant(st.session_state.thread_id, prompt):
+    return True, ""
+
+def process_query(user_input: str):
+    """Procesa la consulta del usuario"""
+    # Validar entrada
+    is_valid, error_msg = validate_input(user_input)
+    if not is_valid:
+        st.error(f"❌ {error_msg}")
         return
     
-    # Obtener respuesta
-    with st.spinner("🤖 Generando respuesta..."):
-        respuesta = run_assistant(st.session_state.thread_id)
+    # Determinar si es contextual
+    is_contextual = is_contextual_query(user_input)
+    
+    # Gestionar thread
+    if not st.session_state.thread_id or not is_contextual:
+        st.session_state.thread_id = create_thread()
+        if not st.session_state.thread_id:
+            return
+    
+    # Agregar mensaje del usuario
+    st.session_state.messages.append(("usuario", user_input))
+    
+    # Mostrar indicador de carga
+    with st.empty():
+        st.markdown("""
+            <div class="loading-container">
+                <div class="loading-dot"></div>
+                <div class="loading-dot" style="animation-delay: 0.2s;"></div>
+                <div class="loading-dot" style="animation-delay: 0.4s;"></div>
+                <span style="margin-left: 10px;">🤖 Generando respuesta...</span>
+            </div>
+        """, unsafe_allow_html=True)
         
-        if respuesta:
-            st.session_state.messages.append(("asistente", respuesta))
-        else:
-            st.session_state.messages.append(("asistente", "Lo siento, hubo un error al procesar tu consulta. Por favor, intenta nuevamente."))
+        # Enviar mensaje y obtener respuesta
+        if send_message(st.session_state.thread_id, user_input):
+            response = get_assistant_response(st.session_state.thread_id)
+            
+            if response:
+                st.session_state.messages.append(("asistente", response))
+            else:
+                st.session_state.messages.append((
+                    "asistente", 
+                    "Lo siento, hubo un problema. Por favor, intenta nuevamente."
+                ))
 
 # ---------------------------
 # INTERFAZ PRINCIPAL
 # ---------------------------
-def render_chat_history():
-    """Renderiza el historial del chat"""
-    for rol, mensaje in st.session_state.messages:
-        with st.chat_message("user" if rol == "usuario" else "assistant"):
-            st.markdown(mensaje)
+init_session_state()
 
-# Mostrar historial
-render_chat_history()
+# Header
+st.markdown("""
+    <div class="header-container">
+        <h1>🤖 Asistente TUPA</h1>
+        <p>Gobierno Regional del Cusco</p>
+        <p style="font-size: 0.9rem; margin-top: 5px;">
+            Consultas sobre procedimientos administrativos
+        </p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Mostrar mensajes
+for role, message in st.session_state.messages:
+    with st.chat_message("user" if role == "usuario" else "assistant"):
+        st.markdown(message)
 
 # Input del usuario
-user_input = st.chat_input("💬 Escribe tu consulta sobre el TUPA aquí...")
-
-if user_input:
-    process_user_input(user_input)
+if prompt := st.chat_input("💬 Escribe tu consulta sobre el TUPA..."):
+    process_query(prompt)
     st.rerun()
 
-# ---------------------------
-# INFORMACIÓN ADICIONAL
-# ---------------------------
-with st.expander("ℹ️ Información sobre el TUPA"):
+# Sidebar con controles
+with st.sidebar:
+    st.header("🛠️ Controles")
+    
+    if st.button("🗑️ Nueva conversación"):
+        st.session_state.messages = []
+        st.session_state.thread_id = None
+        st.rerun()
+    
+    st.divider()
+    
+    # Estadísticas básicas
+    st.metric("Mensajes", len(st.session_state.messages))
+    st.metric("Conversación activa", "Sí" if st.session_state.thread_id else "No")
+
+# Información del TUPA
+with st.expander("ℹ️ ¿Qué es el TUPA?"):
     st.markdown("""
-    **¿Qué es el TUPA?**
+    El **Texto Único de Procedimientos Administrativos (TUPA)** contiene todos los 
+    procedimientos del Gobierno Regional del Cusco:
     
-    El Texto Único de Procedimientos Administrativos (TUPA) es el documento que contiene todos los 
-    procedimientos administrativos que realiza una entidad pública, incluyendo:
+    - 📝 **Requisitos** necesarios
+    - ⏰ **Plazos** de atención  
+    - 💰 **Costos** asociados
+    - 🏢 **Ubicaciones** y horarios
+    - 📚 **Base legal**
     
-    - **Requisitos** necesarios para cada trámite
-    - **Plazos** de atención
-    - **Costos** asociados
-    - **Base legal** correspondiente
-    - **Unidades orgánicas** responsables
-    
-    Este asistente te ayudará a encontrar información específica sobre cualquier trámite del 
-    Gobierno Regional del Cusco de manera rápida y precisa.
+    ¡Pregúntame lo que necesites saber!
     """)
 
 # Footer
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #666; font-size: 0.9rem;'>"
-    "🏛️ Gobierno Regional del Cusco - Asistente TUPA Demo"
+    "<p style='text-align: center; color: #666;'>"
+    "🏛️ Gobierno Regional del Cusco - Demo TUPA"
     "</p>", 
     unsafe_allow_html=True
 )
