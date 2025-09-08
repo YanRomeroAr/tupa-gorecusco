@@ -375,6 +375,13 @@ def get_response(thread_id: str) -> Optional[str]:
 def process_query(query: str):
     if not query.strip():
         return
+    
+    # Verificar conexión antes de procesar
+    if not st.session_state.openai_connected:
+        st.session_state.openai_connected = check_openai_connection()
+        if not st.session_state.openai_connected:
+            st.error("Sin conexión a OpenAI. Verifica tu configuración.")
+            return
         
     if not st.session_state.thread_id:
         st.session_state.thread_id = create_thread()
