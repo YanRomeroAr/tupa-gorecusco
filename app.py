@@ -8,18 +8,18 @@ from typing import Optional
 # CONFIGURACIÓN
 # ---------------------------
 st.set_page_config(
-    page_title="TUPA Assistant",
+    page_title="Asistente TUPA",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# OpenAI Configuration
+# Configuración OpenAI
 try:
     openai.api_key = st.secrets["openai_api_key"]
     assistant_id = st.secrets["assistant_id"]
 except KeyError as e:
-    st.error("⚠️ Configuration required. Please check your secrets.")
+    st.error("⚠️ Configuración requerida. Verifica tus secrets.")
     st.stop()
 
 # ---------------------------
@@ -379,12 +379,12 @@ def process_query(query: str):
     if not st.session_state.thread_id:
         st.session_state.thread_id = create_thread()
         if not st.session_state.thread_id:
-            st.error("Unable to start conversation")
+            st.error("No se pudo iniciar la conversación")
             return
     
     st.session_state.messages.append(("user", query))
     
-    # Show typing indicator
+    # Mostrar indicador de carga
     typing_placeholder = st.empty()
     with typing_placeholder:
         st.markdown("""
@@ -394,7 +394,7 @@ def process_query(query: str):
                     <div class="typing-dot"></div>
                     <div class="typing-dot"></div>
                 </div>
-                <span>Thinking...</span>
+                <span>Pensando...</span>
             </div>
         """, unsafe_allow_html=True)
     
@@ -405,72 +405,85 @@ def process_query(query: str):
         if response:
             st.session_state.messages.append(("assistant", response))
         else:
-            st.session_state.messages.append(("assistant", "I apologize, but I'm having trouble processing your request. Please try again."))
+            st.session_state.messages.append(("assistant", "Disculpa, tengo problemas para procesar tu consulta. Por favor, intenta nuevamente."))
     else:
         typing_placeholder.empty()
-        st.session_state.messages.append(("assistant", "Connection error. Please try again."))
+        st.session_state.messages.append(("assistant", "Error de conexión. Por favor, intenta de nuevo."))
 
 # ---------------------------
 # UI PRINCIPAL
 # ---------------------------
 init_session()
 
-# Status bar
+# Barra de estado
 st.markdown('<div class="status-bar"><div class="status-active"></div></div>', unsafe_allow_html=True)
 
-# Hero section
+# Sección hero
 if not st.session_state.messages:
     st.markdown("""
         <div class="hero-section">
-            <h1 class="hero-title">TUPA Assistant</h1>
+            <h1 class="hero-title">Asistente TUPA</h1>
             <p class="hero-subtitle">Gobierno Regional del Cusco</p>
             <p class="hero-description">
-                Get instant answers about administrative procedures, requirements, and regulations
+                Obtén respuestas instantáneas sobre procedimientos administrativos, requisitos y regulaciones
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    # Quick actions
-    st.markdown("""
-        <div class="quick-actions">
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='What documents do I need for a business license?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">📄 Business License</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='How long does construction permit take?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">🏗️ Construction Permits</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='What are the office hours?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">⏰ Office Hours</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='How much does a zoning certificate cost?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">💰 Fees & Costs</div>
-        </div>
-    """, unsafe_allow_html=True)
+    # Botones de acciones rápidas FUNCIONALES
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("📄 Licencia de Funcionamiento", use_container_width=True):
+            process_query("¿Qué documentos necesito para obtener una licencia de funcionamiento?")
+            st.rerun()
+    
+    with col2:
+        if st.button("🏗️ Permisos de Construcción", use_container_width=True):
+            process_query("¿Cuánto tiempo demora el trámite de permiso de construcción?")
+            st.rerun()
+    
+    with col3:
+        if st.button("⏰ Horarios de Atención", use_container_width=True):
+            process_query("¿Cuáles son los horarios de atención de las oficinas?")
+            st.rerun()
+    
+    with col4:
+        if st.button("💰 Tasas y Costos", use_container_width=True):
+            process_query("¿Cuánto cuesta un certificado de zonificación?")
+            st.rerun()
 
-# Chat container
+# Contenedor del chat
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# Display messages
+# Mostrar mensajes
 for role, message in st.session_state.messages:
     with st.chat_message(role):
         st.markdown(message)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Chat input
-if prompt := st.chat_input("Ask about TUPA procedures..."):
+# Input del chat
+if prompt := st.chat_input("Pregunta sobre procedimientos del TUPA..."):
     process_query(prompt)
     st.rerun()
 
-# Minimal sidebar
+# Sidebar minimalista
 with st.sidebar:
     if st.session_state.messages:
-        if st.button("↻ New Conversation", use_container_width=True):
+        if st.button("↻ Nueva Conversación", use_container_width=True):
             st.session_state.messages = []
             st.session_state.thread_id = None
             st.rerun()
     
     st.markdown("---")
-    st.markdown(f"**Messages:** {len(st.session_state.messages)}")
-    st.markdown(f"**Status:** {'🟢 Active' if st.session_state.thread_id else '⚪ Ready'}")
+    st.markdown(f"**Mensajes:** {len(st.session_state.messages)}")
+    st.markdown(f"**Estado:** {'🟢 Activo' if st.session_state.thread_id else '⚪ Listo'}")
 
 # Footer
 if st.session_state.messages:
     st.markdown("""
         <div class="footer">
-            🏛️ Gobierno Regional del Cusco • TUPA Assistant
+            🏛️ Gobierno Regional del Cusco • Asistente TUPA
         </div>
     """, unsafe_allow_html=True)
