@@ -8,202 +8,397 @@ from typing import Optional
 # CONFIGURACIÓN
 # ---------------------------
 st.set_page_config(
-    page_title="TUPA Assistant",
+    page_title="Asistente TUPA • Gore Cusco",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# OpenAI Configuration
+# Configuración OpenAI
 try:
     openai.api_key = st.secrets["openai_api_key"]
     assistant_id = st.secrets["assistant_id"]
 except KeyError as e:
-    st.error("⚠️ Configuration required. Please check your secrets.")
+    st.error("⚠️ Configuración requerida. Verifica tus secrets.")
     st.stop()
 
 # ---------------------------
-# DISEÑO PROFESIONAL MINIMALISTA
+# DISEÑO PROFESIONAL MEJORADO
 # ---------------------------
 st.markdown("""
 <style>
-    /* Reset y variables CSS */
+    /* Variables de diseño profesional */
     :root {
-        --primary-color: #2563eb;
-        --primary-hover: #1d4ed8;
-        --secondary-color: #64748b;
-        --success-color: #059669;
+        --primary: #1e40af;
+        --primary-light: #3b82f6;
+        --primary-dark: #1e3a8a;
+        --secondary: #64748b;
+        --accent: #0ea5e9;
+        --success: #059669;
+        --warning: #d97706;
+        --error: #dc2626;
         --background: #ffffff;
         --surface: #f8fafc;
+        --surface-2: #f1f5f9;
         --border: #e2e8f0;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
+        --border-strong: #cbd5e1;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
         --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        --radius: 12px;
-        --radius-sm: 8px;
-        --spacing: 1rem;
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        --radius: 16px;
+        --radius-lg: 24px;
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Layout base ultra limpio */
+    /* Reset completo */
     .stApp {
-        background: var(--background);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+        min-height: 100vh;
     }
     
-    /* Header minimalista */
+    /* Header persistente con logo e identidad */
+    .main-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .logo-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .logo-text h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+    
+    .logo-text p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .header-status {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        animation: pulse 2s infinite;
+    }
+    
+    .status-text {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    /* Hero section mejorado */
     .hero-section {
         text-align: center;
-        padding: 4rem 2rem 3rem;
         max-width: 800px;
-        margin: 0 auto;
+        margin: 0 auto 3rem auto;
+        padding: 0 2rem;
     }
     
     .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin: 0 0 1rem 0;
-        letter-spacing: -0.02em;
         line-height: 1.1;
+        letter-spacing: -0.02em;
     }
     
     .hero-subtitle {
         font-size: 1.25rem;
         color: var(--text-secondary);
         margin: 0 0 0.5rem 0;
-        font-weight: 400;
+        font-weight: 600;
     }
     
     .hero-description {
-        font-size: 1.1rem;
-        color: var(--text-secondary);
-        margin: 0;
-        font-weight: 300;
-        opacity: 0.8;
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        margin: 0 0 2rem 0;
+        font-weight: 400;
+        line-height: 1.6;
     }
 
-    /* Chat container profesional */
+    /* Contenedor principal del chat */
     .chat-container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
         padding: 0 2rem;
     }
     
-    /* Messages con diseño Apple-style */
+    /* Mensajes con diseño profesional */
     .stChatMessage {
         background: transparent !important;
-        padding: 1.5rem 0 !important;
+        padding: 1rem 0 !important;
         border: none !important;
         margin: 0 !important;
-    }
-    
-    .stChatMessage[data-testid="user-message"] {
-        background: transparent !important;
+        animation: fadeInUp 0.3s ease-out;
     }
     
     .stChatMessage[data-testid="user-message"] > div {
-        background: var(--primary-color) !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
         color: white !important;
-        padding: 1rem 1.5rem !important;
-        border-radius: 18px 18px 4px 18px !important;
+        padding: 1.25rem 1.75rem !important;
+        border-radius: var(--radius-lg) var(--radius-lg) 8px var(--radius-lg) !important;
         margin-left: auto !important;
-        max-width: 70% !important;
-        box-shadow: var(--shadow-sm) !important;
-        font-size: 0.95rem !important;
-        line-height: 1.4 !important;
+        max-width: 75% !important;
+        box-shadow: var(--shadow-lg) !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        font-weight: 500 !important;
+        position: relative !important;
+    }
+    
+    .stChatMessage[data-testid="user-message"] > div::before {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 16px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid var(--primary);
     }
     
     .stChatMessage[data-testid="assistant-message"] > div {
-        background: var(--surface) !important;
+        background: white !important;
         color: var(--text-primary) !important;
-        padding: 1.5rem !important;
-        border-radius: 18px 18px 18px 4px !important;
+        padding: 1.75rem !important;
+        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 8px !important;
         margin-right: auto !important;
         max-width: 85% !important;
-        box-shadow: var(--shadow-sm) !important;
+        box-shadow: var(--shadow-lg) !important;
         border: 1px solid var(--border) !important;
-        font-size: 0.95rem !important;
-        line-height: 1.6 !important;
+        font-size: 1rem !important;
+        line-height: 1.7 !important;
+        position: relative !important;
+    }
+    
+    .stChatMessage[data-testid="assistant-message"] > div::before {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 16px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid white;
     }
 
-    /* Input ultra profesional */
+    /* Input mejorado con borde más visible */
     .stChatInputContainer {
         background: white !important;
-        border: 2px solid var(--border) !important;
-        border-radius: 24px !important;
-        box-shadow: var(--shadow-lg) !important;
-        transition: all 0.2s ease !important;
-        max-width: 800px !important;
+        border: 3px solid var(--border-strong) !important;
+        border-radius: var(--radius-lg) !important;
+        box-shadow: var(--shadow-xl) !important;
+        transition: var(--transition) !important;
+        max-width: 900px !important;
         margin: 2rem auto !important;
+        position: relative !important;
+    }
+    
+    .stChatInputContainer::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: var(--radius-lg);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: -1;
     }
     
     .stChatInputContainer:focus-within {
-        border-color: var(--primary-color) !important;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), var(--shadow-lg) !important;
+        border-color: transparent !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .stChatInputContainer:focus-within::before {
+        opacity: 1;
     }
     
     .stChatInputContainer input {
         background: transparent !important;
         border: none !important;
-        font-size: 1rem !important;
-        padding: 1rem 1.5rem !important;
+        font-size: 1.1rem !important;
+        padding: 1.25rem 1.75rem !important;
         color: var(--text-primary) !important;
+        font-weight: 500 !important;
     }
     
     .stChatInputContainer input::placeholder {
-        color: var(--text-secondary) !important;
-        opacity: 0.7 !important;
+        color: var(--text-muted) !important;
+        font-weight: 400 !important;
     }
     
     .stChatInputContainer button {
-        background: var(--primary-color) !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
         border: none !important;
-        border-radius: 20px !important;
-        padding: 0.75rem 1rem !important;
-        margin: 0.25rem !important;
-        transition: all 0.2s ease !important;
+        border-radius: calc(var(--radius-lg) - 4px) !important;
+        padding: 1rem 1.25rem !important;
+        margin: 0.5rem !important;
+        transition: var(--transition) !important;
+        box-shadow: var(--shadow-md) !important;
     }
     
     .stChatInputContainer button:hover {
-        background: var(--primary-hover) !important;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%) !important;
         transform: scale(1.05) !important;
+        box-shadow: var(--shadow-lg) !important;
     }
 
-    /* Status indicator minimalista */
-    .status-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--surface);
-        z-index: 1000;
-        border-bottom: 1px solid var(--border);
+    /* Acciones rápidas mejoradas */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
-    .status-active {
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    .quick-action {
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: left;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quick-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
         width: 100%;
-        animation: pulse 2s infinite;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .quick-action:hover {
+        border-color: var(--primary);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .quick-action:hover::before {
+        left: 100%;
+    }
+    
+    .quick-action-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .quick-action-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .quick-action-desc {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.4;
     }
 
-    /* Loading state elegante */
+    /* Estado de carga elegante */
     .loading-message {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 1.5rem;
-        background: var(--surface);
-        border-radius: 18px 18px 18px 4px;
+        gap: 1rem;
+        padding: 1.75rem;
+        background: white;
+        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 8px;
         margin-right: auto;
-        max-width: 200px;
+        max-width: 300px;
         border: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
         color: var(--text-secondary);
-        font-size: 0.9rem;
-        animation: fadeIn 0.3s ease;
+        font-size: 1rem;
+        animation: fadeInUp 0.3s ease;
+        position: relative;
+    }
+    
+    .loading-message::before {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 16px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid white;
     }
     
     .typing-dots {
@@ -212,9 +407,9 @@ st.markdown("""
     }
     
     .typing-dot {
-        width: 6px;
-        height: 6px;
-        background: var(--text-secondary);
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
         border-radius: 50%;
         animation: typing 1.4s infinite ease-in-out;
     }
@@ -222,106 +417,170 @@ st.markdown("""
     .typing-dot:nth-child(1) { animation-delay: -0.32s; }
     .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
-    /* Quick actions minimalista */
-    .quick-actions {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: center;
-        margin: 2rem 0;
-        flex-wrap: wrap;
-    }
-    
-    .quick-action {
+    /* Sidebar mejorado para todos los navegadores */
+    .sidebar-controls {
+        position: fixed;
+        top: 50%;
+        right: 2rem;
+        transform: translateY(-50%);
         background: white;
-        border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 0.75rem 1.25rem;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
+        padding: 1rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+        z-index: 50;
+        min-width: 200px;
+    }
+    
+    .sidebar-header {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .sidebar-button {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 4px);
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-block;
+        transition: var(--transition);
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
     }
     
-    .quick-action:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
-        text-decoration: none;
+    .sidebar-button:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    .sidebar-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+    
+    .stat-label {
+        color: var(--text-secondary);
+    }
+    
+    .stat-value {
+        color: var(--text-primary);
+        font-weight: 600;
     }
 
-    /* Animaciones suaves */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    
-    @keyframes typing {
-        0%, 80%, 100% { transform: scale(0); }
-        40% { transform: scale(1); }
-    }
-
-    /* Sidebar minimalista */
-    .css-1d391kg { padding-top: 2rem; }
-    
-    /* Footer ultra limpio */
+    /* Footer profesional */
     .footer {
         text-align: center;
         padding: 3rem 2rem 2rem;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        border-top: 1px solid var(--border);
         margin-top: 4rem;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
     }
     
+    .footer-content {
+        max-width: 600px;
+        margin: 0 auto;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    @keyframes typing {
+        0%, 80%, 100% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.5rem;
+        .header-content {
+            padding: 0 1rem;
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
         }
         
         .hero-section {
-            padding: 2rem 1rem;
+            padding: 0 1rem;
         }
         
         .chat-container {
             padding: 0 1rem;
         }
         
+        .quick-actions {
+            grid-template-columns: 1fr;
+            margin: 0 1rem 2rem 1rem;
+        }
+        
+        .sidebar-controls {
+            position: static;
+            transform: none;
+            right: auto;
+            margin: 2rem 1rem;
+            width: calc(100% - 2rem);
+        }
+        
         .stChatMessage[data-testid="user-message"] > div,
         .stChatMessage[data-testid="assistant-message"] > div {
             max-width: 90% !important;
         }
-        
-        .quick-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .quick-action {
-            width: 100%;
-            max-width: 300px;
-            text-align: center;
-        }
     }
     
-    /* Ocultar elementos innecesarios */
-    .css-1kyxreq { display: none; }
+    /* Ocultar elementos de Streamlit */
     footer { display: none; }
+    .css-1kyxreq { display: none; }
     .css-15zrgzn { display: none; }
     header[data-testid="stHeader"] { display: none; }
+    .css-1d391kg { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# FUNCIONES CORE
+# FUNCIONES PRINCIPALES
 # ---------------------------
 def init_session():
     if "messages" not in st.session_state:
@@ -379,12 +638,12 @@ def process_query(query: str):
     if not st.session_state.thread_id:
         st.session_state.thread_id = create_thread()
         if not st.session_state.thread_id:
-            st.error("Unable to start conversation")
+            st.error("No se pudo iniciar la conversación")
             return
     
     st.session_state.messages.append(("user", query))
     
-    # Show typing indicator
+    # Mostrar indicador de carga
     typing_placeholder = st.empty()
     with typing_placeholder:
         st.markdown("""
@@ -394,7 +653,7 @@ def process_query(query: str):
                     <div class="typing-dot"></div>
                     <div class="typing-dot"></div>
                 </div>
-                <span>Thinking...</span>
+                <span>Analizando consulta...</span>
             </div>
         """, unsafe_allow_html=True)
     
@@ -405,72 +664,149 @@ def process_query(query: str):
         if response:
             st.session_state.messages.append(("assistant", response))
         else:
-            st.session_state.messages.append(("assistant", "I apologize, but I'm having trouble processing your request. Please try again."))
+            st.session_state.messages.append(("assistant", "Disculpa, tengo problemas para procesar tu consulta. Por favor, intenta nuevamente."))
     else:
         typing_placeholder.empty()
-        st.session_state.messages.append(("assistant", "Connection error. Please try again."))
+        st.session_state.messages.append(("assistant", "Error de conexión. Por favor, intenta de nuevo."))
 
 # ---------------------------
-# UI PRINCIPAL
+# INTERFAZ PRINCIPAL
 # ---------------------------
 init_session()
 
-# Status bar
-st.markdown('<div class="status-bar"><div class="status-active"></div></div>', unsafe_allow_html=True)
+# Header persistente
+st.markdown("""
+    <div class="main-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">🏛️</div>
+                <div class="logo-text">
+                    <h1>Asistente TUPA</h1>
+                    <p>Gobierno Regional del Cusco</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-dot"></div>
+                <span class="status-text">Sistema Activo</span>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# Hero section
+# Hero section (solo cuando no hay mensajes)
 if not st.session_state.messages:
     st.markdown("""
         <div class="hero-section">
-            <h1 class="hero-title">TUPA Assistant</h1>
-            <p class="hero-subtitle">Gobierno Regional del Cusco</p>
+            <h1 class="hero-title">¿En qué puedo ayudarte?</h1>
+            <p class="hero-subtitle">Tu asistente inteligente para procedimientos administrativos</p>
             <p class="hero-description">
-                Get instant answers about administrative procedures, requirements, and regulations
+                Obtén respuestas instantáneas sobre requisitos, plazos, costos y ubicaciones 
+                de los trámites del TUPA del Gobierno Regional del Cusco
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    # Quick actions
-    st.markdown("""
-        <div class="quick-actions">
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='What documents do I need for a business license?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">📄 Business License</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='How long does construction permit take?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">🏗️ Construction Permits</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='What are the office hours?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">⏰ Office Hours</div>
-            <div class="quick-action" onclick="document.querySelector('[data-testid=stChatInput] textarea').value='How much does a zoning certificate cost?'; document.querySelector('[data-testid=stChatInput] textarea').focus();">💰 Fees & Costs</div>
-        </div>
-    """, unsafe_allow_html=True)
+    # Acciones rápidas
+    quick_actions = [
+        {
+            "icon": "📄",
+            "title": "Licencia de Funcionamiento", 
+            "desc": "Requisitos y documentación necesaria",
+            "query": "¿Qué documentos necesito para obtener una licencia de funcionamiento?"
+        },
+        {
+            "icon": "🏗️", 
+            "title": "Permisos de Construcción",
+            "desc": "Plazos y procedimientos de construcción", 
+            "query": "¿Cuánto tiempo demora el trámite de permiso de construcción?"
+        },
+        {
+            "icon": "⏰",
+            "title": "Horarios de Atención",
+            "desc": "Ubicaciones y horarios de oficinas",
+            "query": "¿Cuáles son los horarios de atención de las oficinas?"
+        },
+        {
+            "icon": "💰",
+            "title": "Tasas y Costos", 
+            "desc": "Información sobre pagos y aranceles",
+            "query": "¿Cuánto cuesta un certificado de zonificación?"
+        }
+    ]
+    
+    actions_html = '<div class="quick-actions">'
+    for action in quick_actions:
+        actions_html += f'''
+            <div class="quick-action" onclick="
+                const input = window.parent.document.querySelector('[data-testid=stChatInput] textarea');
+                if (input) {{
+                    input.value = '{action["query"]}';
+                    input.focus();
+                    input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            ">
+                <span class="quick-action-icon">{action["icon"]}</span>
+                <div class="quick-action-title">{action["title"]}</div>
+                <div class="quick-action-desc">{action["desc"]}</div>
+            </div>
+        '''
+    actions_html += '</div>'
+    
+    st.markdown(actions_html, unsafe_allow_html=True)
 
-# Chat container
+# Contenedor del chat
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# Display messages
+# Mostrar mensajes
 for role, message in st.session_state.messages:
     with st.chat_message(role):
         st.markdown(message)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Chat input
-if prompt := st.chat_input("Ask about TUPA procedures..."):
+# Sidebar universal (funciona en todos los navegadores)
+if st.session_state.messages:
+    st.markdown(f"""
+        <div class="sidebar-controls">
+            <div class="sidebar-header">Controles</div>
+            <button class="sidebar-button" onclick="
+                window.parent.postMessage({{type: 'newConversation'}}, '*');
+            ">
+                ↻ Nueva Conversación
+            </button>
+            <div class="sidebar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Mensajes:</span>
+                    <span class="stat-value">{len(st.session_state.messages)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Estado:</span>
+                    <span class="stat-value">{'🟢 Activo' if st.session_state.thread_id else '⚪ Listo'}</span>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            window.addEventListener('message', function(event) {{
+                if (event.data.type === 'newConversation') {{
+                    window.location.reload();
+                }}
+            }});
+        </script>
+    """, unsafe_allow_html=True)
+
+# Input de chat
+if prompt := st.chat_input("Escribe tu consulta sobre procedimientos del TUPA..."):
     process_query(prompt)
     st.rerun()
 
-# Minimal sidebar
-with st.sidebar:
-    if st.session_state.messages:
-        if st.button("↻ New Conversation", use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.thread_id = None
-            st.rerun()
-    
-    st.markdown("---")
-    st.markdown(f"**Messages:** {len(st.session_state.messages)}")
-    st.markdown(f"**Status:** {'🟢 Active' if st.session_state.thread_id else '⚪ Ready'}")
-
-# Footer
-if st.session_state.messages:
-    st.markdown("""
-        <div class="footer">
-            🏛️ Gobierno Regional del Cusco • TUPA Assistant
+# Footer profesional
+st.markdown("""
+    <div class="footer">
+        <div class="footer-content">
+            <strong>🏛️ Gobierno Regional del Cusco</strong><br>
+            Asistente TUPA • Facilitando el acceso a información pública<br>
+            <small>Desarrollado para mejorar la atención ciudadana</small>
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+""", unsafe_allow_html=True)
